@@ -123,3 +123,20 @@ def deriving_key_from_master_password(master_pw, salt, iterations=1000000, key_l
         dklen=key_length
     )
     return salt, key
+
+
+def taking_key_from_usb(path):
+    usb_not_found = True
+    while usb_not_found:
+        try:
+            with open(path) as file:
+                key_from_usb = file.read()
+                usb_not_found = False
+                return key_from_usb
+        except FileNotFoundError:
+            print("USB not found. Plug it in and press enter:\n")
+            pressed_enter = input("")
+
+
+
+
