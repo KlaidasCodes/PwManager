@@ -20,6 +20,8 @@ master_dictionary = {}
 KEY = b'\x93\xe9\x13\xe6\xed>\x97\xa8*\xaa\xd1H\xacMs\x08=&L\xdcDp\x9dc7~\xdd\xbf\x88l\xfb%'
 key_hex = "93e913e6ed3e97a82aaad148ac4d73083d264cdc44709d63377eddbf886cfb25"
 
+usb_path = "D:\placeholder_for_key.txt"
+
 # TODO-1 code a notes app first without any encryption
 # TODO-2 look into pgp, watch some videos and learn about it in depth. Will give me a deeper understanding of
 # how to make it actually secure and how to protect it against possible attacks and breaches, or passwords
@@ -93,8 +95,14 @@ if __name__ == "__main__":
                     if do_continue == "n":
                         break
                 elif type_or_pull_key == "2":
-                    # still have to work out how to interact with the system
-                    pass
+                    key_from_usb = taking_key_from_usb(usb_path)
+                    print(key_from_usb)
+                    key_byte_format = binascii.unhexlify(key_from_usb)
+                    decrypted_pw = decrypt_text(key_byte_format, encrypted_byte_pw)
+                    print(f"The decrypted password for {website} is {decrypted_pw}")
+                    do_continue = input("Anything else? (Y/N)\n").lower()
+                    if do_continue == "n":
+                        break
             except KeyError:
                 print("Couldn't find any data for the inputted website.")
         else:
@@ -117,3 +125,7 @@ if __name__ == "__main__":
 
 # IDEA FOR FUTURE: add an option to change the master password so it doesnt have to be manipulated
 # by going through code manually.
+
+
+
+# Still need to encrypt the USB and put a passord on it. DOwnloaded VeraCrypt, do it with that. 
