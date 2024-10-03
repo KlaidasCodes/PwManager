@@ -1,8 +1,8 @@
 import datetime
 import secrets
 import string
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
+import hashlib
+import os
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
@@ -45,12 +45,12 @@ def decrypt_text(key, encrypted_text):
     # returns clean decrypted text
     return unpadded_decrypted_text.decode("UTF-8")
 
-def turn_byte_enc_password_to_hex(encrypted_byte_password):
+def byte_to_hex(encrypted_byte_password):
     """Takes the encrypted password in byte form and transforms it into hex format, so it can be stored as json"""
     encrypted_password_hex = binascii.hexlify(encrypted_byte_password).decode()
     return encrypted_password_hex
 
-def turn_hex_password_to_byte(encrypted_hex_password):
+def hex_to_byte(encrypted_hex_password):
     """Takes encrypted password in hex form and transforms it into bytes, so it can be used to be decrypted"""
     encrypted_password_bytes = binascii.unhexlify(encrypted_hex_password)
     return encrypted_password_bytes
@@ -73,10 +73,12 @@ def generate_password():
 def update_master_dict(new_sub_dict, json_file_path):
     with open(json_file_path, "r") as json_file:
         master_dict = json.load(json_file)
-        master_dict.update(new_sub_dict)
-        with open(json_file_path, "w") as json_file_2:
-            json.dump(master_dict, json_file_2, indent=4)
-            print("The master dictionary has been updated successfully.")
+    master_dict.update(new_sub_dict)
+    with open(json_file_path, "w") as json_file:
+        json.dump(master_dict, json_file, indent=4)
+
+
+        print("The master dictionary has been updated successfully.")
             # print(master_dict)
 
 def take_info():
@@ -105,3 +107,19 @@ def browse_main_dict(dict_main_path, word_to_browse):
         return website, username, encoded_pw
 
 
+def creating_random_16_bit():
+    random_salt = os.urandom(16)
+    return random_salt
+
+# def adding_salt_and_iv_to_encrypted_text(encrypted_text, salt, iv):
+#     return iv + salt + encrypted_text
+
+def deriving_key_from_master_password(master_pw, salt, iterations=1000000, key_length=32):
+    key = hashlib.pbkdf2_hmac(
+        'sha256',
+        master_pw.encode(),
+        salt,
+        iterations,
+        dklen=key_length
+    )
+    return salt, key
