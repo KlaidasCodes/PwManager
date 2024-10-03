@@ -110,5 +110,10 @@ if __name__ == "__main__":
 
 
 # TODO-1: convert json to hex, encrypt the json with AES and KDF.
+# testing in "trying_encryption.py"
 
 
+
+
+# IDEA FOR FUTURE: add an option to change the master password so it doesnt have to be manipulated
+# by going through code manually.
