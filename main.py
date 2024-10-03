@@ -47,6 +47,15 @@ if __name__ == "__main__":
         if new_or_old_info == "1":
             # still need to fix the part where the key has to come from a usb, not from my computer
             temp_password, temp_username, temp_website = take_info()
+            print(f"The details you have inputted:\n\nUsername:\t\t{temp_username}\nWebsite:\t\t{temp_website}\n\n"
+                  f"Are the details correct?")
+            are_details_correct = input("Y/N\n").lower()
+            if are_details_correct == "n":
+                while are_details_correct == "n":
+                    temp_password, temp_username, temp_website = take_info()
+                    print(f"The details you have inputted:\n\nUsername:\t\t{temp_username}\nWebsite:\t\t{temp_website}\n\n"
+                          f"Are the details correct?")
+                    are_details_correct = input("Y/N\n").lower()
             # encrypting the password and turning it into a hex format from byte:
             encrypted_password = encrypt_text(enc_key=KEY, text=temp_password)
             encrypted_hex_password = byte_to_hex(encrypted_password)
@@ -68,18 +77,6 @@ if __name__ == "__main__":
             website_choice = input("What website info would you like?\n").lower()
             try:
                 website, username, encrypted_hex_password = browse_main_dict("data.json", website_choice)
-                print(f"The details you have inputted:\n\nUsername:\t\t{username}\nWebsite:\t\t{website}\n\n"
-                      f"Are the details correct?")
-                incorrect_details = True
-                while incorrect_details:
-                    are_details_correct_q = input("Y/N\n").lower()
-                    if are_details_correct_q == "y":
-                        # FINISH THIS ##############
-                #########################################
-                ######################################
-                #################
-
-
                 encrypted_byte_pw = hex_to_byte(encrypted_hex_password)
                 # decrypted_password = decrypt_text(KEY, encrypted_byte_pw)
                 # Now gotta request a key to decrypt a password. It can be manually entered or pulled straight
@@ -109,16 +106,9 @@ if __name__ == "__main__":
 
 
 # ok so the password generation, encryption and login info storage in a master dict (JSON) all works.
-# now gotta work out the other parts - the master password for the json file itself which will be encrypted also
+# now gotta work out the other parts - the master password f
 
 
-
-
-
-
-# Remaining stuff to do:
-# TODO-1: Set up a function that would interact with a USB and info on it
-# TODO-2: Possibly set up a UI or a text-based (in cmd) UI to make this more streamlined
-# TODO-3: Encrypt the entire json file with AES and use the derivation function to set a master password
+# TODO-1: convert json to hex, encrypt the json with AES and KDF.
 
 
