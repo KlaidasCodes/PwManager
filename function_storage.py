@@ -111,8 +111,6 @@ def creating_random_16_bit():
     random_salt = os.urandom(16)
     return random_salt
 
-# def adding_salt_and_iv_to_encrypted_text(encrypted_text, salt, iv):
-#     return iv + salt + encrypted_text
 
 def deriving_key_from_master_password(master_pw, salt, iterations=1000000, key_length=32):
     key = hashlib.pbkdf2_hmac(
@@ -138,5 +136,80 @@ def taking_key_from_usb(path):
             pressed_enter = input("")
 
 
+def encrypting_json_file_with_new_password(json_path, key, salt):
+    """takes json, converts it to string in byte format, encrypts and adds a salt as the first 16 bytes.
+    And then replaces the json with the new info just encrypted. Returns nothing."""
+    with open(json_path) as main_file:
+        json_as_dictionary = json.load(main_file)
+        json_as_string = json.dumps(json_as_dictionary)
+        # instead of derived_key, needs to be the actual derivedKey inputted into the
+        # function
+        json_as_string_byte_enc = encrypt_text(key, json_as_string)
+
+        json_as_string_byte_enc_with_salt = salt + json_as_string_byte_enc
+        # print(json_as_string_byte_enc)
+        json_as_string_hex_enc_with_salt = byte_to_hex(json_as_string_byte_enc_with_salt)
+        # print(json_as_string_hex_enc)
+        with open("data_copy.json", "w") as main_file_2:
+            json.dump(json_as_string_hex_enc_with_salt, main_file_2)
 
 
+def split_encrypted_json_and_salt(encrypted_json_with_salt):
+    encrypted_json_with_salt_formatted = encrypted_json_with_salt[1:-1]
+    """takes the json file and returns encrypted text and salt separately. Takes encrypted json in hex format"""
+    encrypted_json = encrypted_json_with_salt_formatted[32:]
+    salt = encrypted_json_with_salt_formatted[:32]
+    return encrypted_json, salt
+
+
+def returns_encrypted_json_and_salt_separately(json_path):
+    with open(json_path, "r") as file:
+        encrypted_json_with_salt_dict = json.load(file)
+        encrypted_json_with_salt_string = json.dumps(encrypted_json_with_salt_dict)
+        # print(encrypted_json_with_salt_string)
+        # encrypted_json_with_salt_string_byte = hex_to_byte(encrypted_json_with_salt_string)
+        encrypted_json_string_byte, salt_str_byte = split_encrypted_json_and_salt(encrypted_json_with_salt_string)
+        # print(f"encrypted json string byte: {encrypted_json_string_byte}")
+        # print(f"salt str byte: {salt_str_byte}")
+        return encrypted_json_string_byte, salt_str_byte
+
+
+def ask_for_master_pw():
+    return input("What's the password?\n")
+
+
+def decrypt_json(json_path):
+    """Takes the encrypted json from the destination, separates its salt and encrypted parts
+    and then decrypts the json, returning decrypted json(str) and its salt(byte)"""
+    encrypted_json, salt = returns_encrypted_json_and_salt_separately(json_path)
+    encrypted_json_byte = hex_to_byte(encrypted_json)
+    master_password = ask_for_master_pw()
+    # master_password = test_password
+    # print(salt)
+    # master password has to be converted to bytes first, just like salt.
+    salt_byte = hex_to_byte(salt)
+    derived_used_salt, derived_key_from_master_pw = deriving_key_from_master_password(master_pw=master_password, salt=salt_byte)
+    # print(f"derived key from master pw: {derived_key_from_master_pw}")
+    # derived_key_from_master_pw_byte = hex_to_byte(derived_key_from_master_pw)
+    final_result = decrypt_text(derived_key_from_master_pw, encrypted_json_byte)
+    # print("Password is correct!\n\n\n\n\n")
+    # print(f"Final result: {final_result}")
+    return final_result, salt_byte
+
+
+def initial_json_encryption(json_path, drv_salt, drv_key):
+    """Takes inputs of json_path, derived salt, derived key (from KDF). Replaces the content in the destination
+    (the json file) with an encrypted version of it in string hex format."""
+    with open(json_path, "r") as file:
+        json_file_as_dict = json.load(file)
+        json_file_as_string = json.dumps(json_file_as_dict)
+        # print(json_file_as_string)
+        encrypted_json_str_byte = encrypt_text(drv_key, json_file_as_string)
+        # print(encrypted_json_str)
+        enc_json_str_and_salt_bytes = drv_salt + encrypted_json_str_byte
+        # The code read the json file and encrypted it, added a salt as the first 16 bytes. Now it needs to replace the
+        # current unencrypted json file
+        encrypted_json_str_and_salt_hex = byte_to_hex(enc_json_str_and_salt_bytes)
+        print(f"Encrypted json: {encrypted_json_str_and_salt_hex}")
+        with open("data_copy.json", "w") as file1:
+            json.dump(encrypted_json_str_and_salt_hex, file1)
