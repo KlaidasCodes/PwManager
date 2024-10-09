@@ -8,7 +8,7 @@ from function_storage import *
 #
 
 
-    # print(file_readable)
+# print(file_readable)
 
 
 # logic of the encryption:
@@ -20,18 +20,25 @@ from function_storage import *
 # we need an encryption funcion now
 
 test_password = "I_like_dan_cing_in_the_rain"
-random_salt = creating_random_16_bit()
-derived_salt, derived_key = deriving_key_from_master_password(test_password, random_salt)
-print(derived_key)
-
-
 
 our_json_file_path = "C:/Users/Klaidas/PycharmProjects/todolist/data_copy.json"
-with open(our_json_file_path, "r") as file:
-    file_readable = json.load(file)
-    encrypted_json = encrypt_text(derived_key, text=file_readable)
-    print(encrypted_json)
-    # FINISH THIS ####################
-    ################################
-    ###############################
-    #############################
+
+# still needs a bunch of exceptions for incorrect key handling
+
+# initial_json_encryption("data_copy.json", drv_salt=derived_salt, drv_key=derived_key)
+
+
+# These 4 lines:
+# Generate a random salt, then use KDF to derive a key from a master password. Using that it takes the json file
+# and encrypts it into a string in hex plus its salt as the first 16bytes (32 symbols in hex). This logic only needs to
+# be used once, it establishes a master password and locks json essentially.
+random_salt = creating_random_16_bit()
+derived_salt, derived_key = deriving_key_from_master_password(test_password, random_salt)
+initial_json_encryption("data_copy.json", derived_salt, derived_key)
+
+
+# This line takes the encrypted json file, asks for a master password and then decrypts it, returning the salt used and
+# the decrypted json content. Now it can be browsed through. Will have to go in the "if ans=="2" (accessing info)
+
+decrypted_json, salt = decrypt_json("data_copy.json")
+print(f"decrypted json: {decrypted_json}")
